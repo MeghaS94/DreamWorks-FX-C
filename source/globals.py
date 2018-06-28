@@ -9,7 +9,7 @@ import time
 from objLoader import ObjectLoader
 
 """
-Contains variables, assests used accross files
+This class contains variables, assests used accross files
 """
 
 def init():
@@ -22,7 +22,6 @@ def init():
 	slab = ObjectLoader("../assets/slab.obj")
 	sphere = ObjectLoader("../assets/sphere.obj")
 	cube = ObjectLoader("../assets/cube.obj")
-	#print self.cube.getNormal()
 	cone = ObjectLoader("../assets/cone.obj")
 	bunny = ObjectLoader("../assets/bunny.obj")
 	#sphere, cone, cube, bunny

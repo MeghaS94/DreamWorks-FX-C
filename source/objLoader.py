@@ -5,9 +5,16 @@ from OpenGL.GLU import *
 from OpenGL.GL import *
 import math
 
+"""
+Class to read the obj model from a file.
+The obj file will have vertices, faces, normals and texture coordinates.
+"""
 class ObjectLoader:
 
 	def addTriangle(self, a, b, c):
+		"""
+		Add a triangle to the array of triangles.
+		"""
 		self.disp_tri_array = np.append(self.disp_tri_array, self.v_arr[a*3])
 		self.disp_tri_array = np.append(self.disp_tri_array, self.v_arr[a*3+1])
 		self.disp_tri_array = np.append(self.disp_tri_array, self.v_arr[a*3+2])
@@ -19,6 +26,9 @@ class ObjectLoader:
 		self.disp_tri_array = np.append(self.disp_tri_array, self.v_arr[c*3+2])
 
 	def addTex(self, a, b, c):
+		"""
+		Add texture coordinates to the array of uvs.
+		"""
 		self.disp_tex_array = np.append(self.disp_tex_array, self.vt_arr[a*2])
 		self.disp_tex_array = np.append(self.disp_tex_array, self.vt_arr[a*2+1])
 		self.disp_tex_array = np.append(self.disp_tex_array, self.vt_arr[b*2])
@@ -26,7 +36,10 @@ class ObjectLoader:
 		self.disp_tex_array = np.append(self.disp_tex_array, self.vt_arr[c*2])
 		self.disp_tex_array = np.append(self.disp_tex_array, self.vt_arr[c*2+1])
 
-	def addNorm(self, a, b, c):
+	def addNormal(self, a, b, c):
+		"""
+		Add normals to the array of normals.
+		"""
 		self.disp_norm_array = np.append(self.disp_norm_array, self.vn_arr[a*3])
 		self.disp_norm_array = np.append(self.disp_norm_array, self.vn_arr[a*3+1])
 		self.disp_norm_array = np.append(self.disp_norm_array, self.vn_arr[a*3+2])
@@ -37,7 +50,11 @@ class ObjectLoader:
 		self.disp_norm_array = np.append(self.disp_norm_array, self.vn_arr[c*3+1])
 		self.disp_norm_array = np.append(self.disp_norm_array, self.vn_arr[c*3+2])
 
-	def addNorm1(self, a, b, c):
+	def calulateNormal(self, a, b, c):
+		"""
+		From the given vertex information, compute the normal 
+		by doing a cross product of the two sides of the face.
+		"""
 		# ath vertex -> self.v_arr[a*3], self.v_arr[a*3+1], self.v_arr[a*3+2]
 		# bth vertex -> self.v_arr[b*3], self.v_arr[b*3+1], self.v_arr[b*3+2] 	
 		# cth vertex -> self.v_arr[c*3], self.v_arr[c*3+1], self.v_arr[c*3+2]
@@ -65,7 +82,6 @@ class ObjectLoader:
 		self.cx = 0.0
 		self.cy = 0.0
 		self.cz = 0.0
-		#is it good to hardcode this!?
 		#limits for the bounding box
 		self.minx = 100.0
 		self.miny = 100.0
@@ -129,9 +145,9 @@ class ObjectLoader:
 					if(len(str_arr[1].split('/'))>1 and str_arr[1].split('/')[1]!=''):
 						self.addTex(int(str_arr[1].split('/')[1])-1, int(str_arr[2].split('/')[1])-1, int(str_arr[3].split('/')[1])-1)
 					if(len(str_arr[1].split('/'))>2 and str_arr[1].split('/')[2]!=''):
-						self.addNorm(int(str_arr[1].split('/')[2])-1, int(str_arr[2].split('/')[2])-1, int(str_arr[3].split('/')[2])-1)
+						self.addNormal(int(str_arr[1].split('/')[2])-1, int(str_arr[2].split('/')[2])-1, int(str_arr[3].split('/')[2])-1)
 					else : #compute and Add your own normal
-						self.addNorm1(int(str_arr[1].split('/')[0])-1, int(str_arr[2].split('/')[0])-1, int(str_arr[3].split('/')[0])-1)
+						self.calulateNormal(int(str_arr[1].split('/')[0])-1, int(str_arr[2].split('/')[0])-1, int(str_arr[3].split('/')[0])-1)
 				elif(len(str_arr)==5): #case: QUADS
 					self.addTriangle(int(str_arr[1].split('/')[0])-1, int(str_arr[2].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)
 					self.addTriangle(int(str_arr[2].split('/')[0])-1, int(str_arr[3].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)
@@ -139,12 +155,12 @@ class ObjectLoader:
 						self.addTex(int(str_arr[1].split('/')[1])-1, int(str_arr[2].split('/')[1])-1, int(str_arr[4].split('/')[1])-1)
 						self.addTex(int(str_arr[2].split('/')[1])-1, int(str_arr[3].split('/')[1])-1, int(str_arr[4].split('/')[1])-1)
 					if(len(str_arr[1].split('/'))>2 and str_arr[1].split('/')[2]!=''):
-						self.addNorm(int(str_arr[1].split('/')[2])-1, int(str_arr[2].split('/')[2])-1, int(str_arr[4].split('/')[2])-1)
-						self.addNorm(int(str_arr[2].split('/')[2])-1, int(str_arr[3].split('/')[2])-1, int(str_arr[4].split('/')[2])-1)
+						self.addNormal(int(str_arr[1].split('/')[2])-1, int(str_arr[2].split('/')[2])-1, int(str_arr[4].split('/')[2])-1)
+						self.addNormal(int(str_arr[2].split('/')[2])-1, int(str_arr[3].split('/')[2])-1, int(str_arr[4].split('/')[2])-1)
 					else :
-						self.addNorm1(int(str_arr[1].split('/')[0])-1, int(str_arr[2].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)
-						self.addNorm1(int(str_arr[2].split('/')[0])-1, int(str_arr[3].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)	
-		#print "here", len(self.disp_tri_array)
+						self.calulateNormal(int(str_arr[1].split('/')[0])-1, int(str_arr[2].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)
+						self.calulateNormal(int(str_arr[2].split('/')[0])-1, int(str_arr[3].split('/')[0])-1, int(str_arr[4].split('/')[0])-1)	
+		#print "len of triangle array : ", len(self.disp_tri_array)
 		#print disp_quad_array
 		#print len(self.disp_tex_array)
 		#print len(self.disp_norm_array)
@@ -199,14 +215,14 @@ class ObjectLoader:
 		#glPolygonMode(GL_FRONT, GL_LINES)
 		if (len(self.disp_tri_array) > 0) :
 			glVertexPointer(3,GL_FLOAT,	0, self.disp_tri_array)
-		#else :
-		#	glVertexPointer(3,GL_FLOAT,	0, self.disp_quad_array)
+		else :
+			glVertexPointer(3,GL_FLOAT,	0, self.disp_quad_array)
 		glNormalPointer(GL_FLOAT, 0, self.disp_norm_array)
 		glTexCoordPointer( 2 , GL_FLOAT, 0, self.disp_tex_array )
 		if (len(self.disp_tri_array) > 0) :
 			glDrawArrays(GL_TRIANGLES, 0, len(self.disp_tri_array)/3)
-		#else :	
-		#	glDrawArrays(GL_QUADS, 0, len(self.disp_quad_array)/3)
+		else :	
+			glDrawArrays(GL_QUADS, 0, len(self.disp_quad_array)/3)
 		glDisableClientState(GL_VERTEX_ARRAY)
 		glDisableClientState(GL_NORMAL_ARRAY)
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY)

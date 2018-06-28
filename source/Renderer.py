@@ -10,7 +10,9 @@ from Particle import Particle
 from Emitter import Emitter
 import globals
 """
-The main Renderer class
+The main Renderer class.
+This also includes, the windowing system
+and keyboard interaction functions.
 """
 
 class Renderer :
@@ -60,6 +62,9 @@ class Renderer :
 
 
 	def keyboard (self,key, x, y):
+		"""
+		Key controls -> Move around the scene, make objects dissapear
+		"""
 		if (key == 'Q'):
 			self.x += 0.3
 			glutPostRedisplay()
@@ -139,14 +144,13 @@ class Renderer :
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lightDifAndSpec)
 		glEnable(GL_LIGHT0)
 
-		self.sawblade = globals.sawblade
-		self.ground = globals.ground	
-		self.slab = globals.slab
-		self.sphere = globals.sphere
-		self.cube = globals.cube
-		#print self.cube.getNormal()
-		self.cone = globals.cone
-		self.bunny = globals.bunny
+		self.sawblade 	= globals.sawblade
+		self.ground 	= globals.ground	
+		self.slab 		= globals.slab
+		self.sphere 	= globals.sphere
+		self.cube 		= globals.cube
+		self.cone 		= globals.cone
+		self.bunny 		= globals.bunny
 
 		glEnable(GL_LIGHTING)
 		glEnable(GL_TEXTURE_2D)
@@ -155,7 +159,7 @@ class Renderer :
 
 	def display(self):
 		# timer to dictate the emission of particles
-		self.t += 1
+		self.t += 10	#incrementing time in each iteration by a constant value of 10 units.
 		if (self.t % 1 == 0):
 			self.emitter.emit()
 		self.frame +=1
@@ -179,6 +183,7 @@ class Renderer :
 		glRotatef(self.z, 0,0,1)
 		glScalef(self.scale, self.scale, self.scale)
 
+		# texture all the obstacles in the scene
 		glBindTexture(GL_TEXTURE_2D, self.texid_slab)
 		self.slab.draw()
 
@@ -210,10 +215,11 @@ class Renderer :
 			self.bunny.draw()
 		
 		glDisable(GL_LIGHTING)
+
 		#Draw the particles 
 		i = 0
 		while(i < len(globals.all_particles)):
-			status = globals.all_particles[i].draw()
+			status = globals.all_particles[i].draw()	# Decide if the particle is dead or alive
 			if (status == False):
 				globals.all_particles = numpy.delete(globals.all_particles, i)
 			else :

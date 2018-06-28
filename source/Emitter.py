@@ -13,12 +13,12 @@ class Emitter :
 		self.texid = texid
 
 	def emit(self):	
-		#particle = Particle(1.0, -random.uniform(0.1, 0.27), random.uniform(0.08, 0.2), 
-		#	random.uniform(-0.1, 0.07), globals.sawblade.getCentroidX()-0.33,
-		#	globals.sawblade.getCentroidY()-0.33, globals.sawblade.getCentroidZ(), 0.17 ,self.texid)
-		particle = Particle(0.9, -0.22,
-		 	0.16, random.uniform(0.01, -0.1), globals.sawblade.getCentroidX()-0.33,
-			globals.sawblade.getCentroidY()-0.33, globals.sawblade.getCentroidZ(), 0.13 ,self.texid)
+		"""
+		Generate particles and append to a global array of particles
+		"""
+		# args passed to particle -> deltaTime, velx, vely, velz, posx, posy, posz, size, texID
+		particle = Particle(0.9, -0.22, 0.16, random.uniform(0.01, -0.1), globals.sawblade.getCentroidX()-0.33,
+							globals.sawblade.getCentroidY()-0.33, globals.sawblade.getCentroidZ(), 0.13 ,self.texid)
 		globals.all_particles = numpy.append(globals.all_particles, particle)
 			
 	

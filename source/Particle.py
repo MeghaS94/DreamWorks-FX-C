@@ -6,6 +6,10 @@ import numpy, math, sys, os, random
 from objLoader import ObjectLoader
 import globals
 
+"""
+This class defines how a single particle behaves.
+"""
+
 class Particle :
 	def __init__(self, deltaTime, velx, vely, velz, posx, posy, posz, size, texID):
 		#Assests in the scene
@@ -24,37 +28,42 @@ class Particle :
 		self.Posy = posy
 		self.Posz = posz
 		self.size = size
-		#sphere obstacle's information
+
+		#sphere bounding box information
 		self.sCX = self.sphere.getCentroidX()
 		self.sCY = self.sphere.getCentroidY()
 		self.sCZ = self.sphere.getCentroidZ()
 		self.sCR = self.sphere.getRadius()
-		#box obstacle information
+		
+		#box bounding box information
 		self.bxmin = self.cube.minX()
 		self.bxmax = self.cube.maxX()
 		self.bymin = self.cube.minY()
 		self.bymax = self.cube.maxY()
 		self.bzmin = self.cube.minZ()
 		self.bzmax = self.cube.maxZ()
-		#cone obstacle information
+		
+		#cone bounding box information
 		self.cxmin = self.cone.minX()
 		self.cxmax = self.cone.maxX()
 		self.cymin = self.cone.minY()
 		self.cymax = self.cone.maxY()
 		self.czmin = self.cone.minZ()
 		self.czmax = self.cone.maxZ()
-		#bunny's obstacle information
+		
+		#bunny's bounding information
 		self.Bunxmin = self.bunny.minX()
 		self.Bunxmax = self.bunny.maxX()
 		self.Bunymin = self.bunny.minY()
 		self.Bunymax = self.bunny.maxY()
 		self.Bunzmin = self.bunny.minZ()
 		self.Bunzmax = self.bunny.maxZ()
+		
 		#Time interval after which new velocity and new position are calculated
 		self.deltaTime = deltaTime
-		self.g = 0.0095 		#acceleration due to gravity
-		self.done = False	#bool flag to check if a particle has collided or not, 
-							#Particle is killed as soon as it collides and child particles are spawned.
+		self.g = 0.0095 			#acceleration due to gravity
+		self.collided = False		#bool flag to check if a particle has collided or not, 
+									#Particle is killed as soon as it collides and child particles are spawned.
 
 	def newPos(self):
 		#Calculate the new position of the particle
@@ -87,11 +96,16 @@ class Particle :
 		u = (dot11 * dot02 - dot01 * dot12) * invDenom
 		v = (dot00 * dot12 - dot01 * dot02) * invDenom
 
-		#Check if point is in triangle
+		#Check if point with u.v as barycentric coordinates is in triangle
 		return (u >= 0) and (v >= 0) and (u + v <= 1)
 
 
-	def calculateCollisionImpact(self, faces, normals, e):		
+	def calculateCollisionImpact(self, faces, normals, e):	
+		"""
+		args : faces, normals, e (coefficient of restitution)
+		If a particle has collided, then that particle is killed. 
+		Soawn new particles from the collision impact
+		"""	
 		for i in range(0,len(faces), 9):
 			vertex1 = numpy.array([faces[i], faces[i+1], faces[i+2]])
 			vertex2 = numpy.array([faces[i+3], faces[i+4], faces[i+5]])
@@ -104,18 +118,16 @@ class Particle :
 			d = -(numpy.dot(vertex1, UnitNormal)) #check
 			
 			perpDist = (UnitNormal[0]*self.Posx + UnitNormal[1]*self.Posy + UnitNormal[2]*self.Posz + d)
-			#perpDist = abs(normal[0]*self.Posx + normal[1]*self.Posy + normal[2]*self.Posz + d)/float(numpy.linalg.norm(normal))
+			
 			if ( perpDist < 0.001):
 				position = numpy.array([self.Posx, self.Posy, self.Posz])
 				pointOnPlane = position - perpDist*UnitNormal
 				
 				if (self.checkInsideTriangle(pointOnPlane , vertex1, vertex2, vertex3)):
-					#print "DetectCollisionWithCone"
-					#if (normal[0]*self.Posx + normal[1]*self.Posy + normal[2]*self.Posz + d > 0):
-					ec = e
-					n = normal 	#normal at the point of collision
+					ec = e 												#coefficient of restitution
+					n = normal 											#normal at the point of collision
 					Velocity = numpy.array([self.Velx, self.Vely, self.Velz])
-					t = numpy.cross(n,numpy.cross(Velocity,n))	 #tagent = nX(vXn)
+					t = numpy.cross(n,numpy.cross(Velocity,n))	 		#tagent = nX(vXn)
 					# resolve the velocity into components along the normal n and tangent t 
 					Vxn = (numpy.dot(Velocity, n) / float(numpy.dot(n,n)) )* n[0]
 					Vyn = (numpy.dot(Velocity, n) / float(numpy.dot(n,n)) )* n[1]
@@ -128,7 +140,7 @@ class Particle :
 					#self.Vely = -ec*Vyn + Vyt
 					#self.Velz = -ec*Vzn + Vzt
 					#set bool to kill particles
-					self.done = True
+					self.collided = True
 					V = math.sqrt(self.Velx*self.Velx + self.Vely*self.Vely + self.Velz*self.Velz )
 					normal_mag = math.sqrt(n[0]*n[0] +  n[1]*n[1] + n[2]*n[2])
 					#unit vector of velocity in the direction of the normal
@@ -152,16 +164,16 @@ class Particle :
 					break	
 	
 	def newVel(self):
-		#Since the only acceleration considered in acceleration due to gravity, g, velocity changes due to acceleration only in the y direction
+		# Since the only acceleration considered in acceleration due to gravity, g, velocity changes due to acceleration only in the y direction
 		# vely = vely - g * delta t
 		self.Vely = self.Vely - self.g* self.deltaTime
 
 		if(self.DetectCollisionWithPlane()):
-			ep = 0.4 #e for plane
-			n =  numpy.array([0,1,0 ] )   #normal to the ground
+			ep = 0.4 									# e (coefficient of restitution) for plane
+			n =  numpy.array([0,1,0 ] )   				# normal to the ground
 			Velocity = numpy.array([self.Velx, self.Vely, self.Velz])
-			t = numpy.array([1,0,0])	  #numpy.cross(n,numpy.cross(Velocity,n))	 
-			#print t						#tagent = n X v
+			t = numpy.cross(n,numpy.cross(Velocity,n))	# tagent = n X v 
+			
 			Vxn = (numpy.dot(Velocity, n) / float(numpy.dot(n,n)) )* n[0]
 			Vyn = (numpy.dot(Velocity, n) / float(numpy.dot(n,n)) )* n[1]
 			Vzn = (numpy.dot(Velocity, n) / float(numpy.dot(n,n)) )* n[2]
@@ -173,7 +185,7 @@ class Particle :
 			self.Vely = -ep*Vyn + Vyt
 			self.Velz = -ep*Vzn + Vzt
 			# set bool to kill particle
-			self.done = True
+			self.collided = True
 			V = math.sqrt(self.Velx*self.Velx + self.Vely*self.Vely + self.Velz*self.Velz )
 			normal_mag = math.sqrt(Vxn*Vxn +  Vyn*Vyn + Vyn*Vyn)
 			#unit vector of the velocity in the direction of the normal
@@ -267,23 +279,10 @@ class Particle :
 		else :
 			return False		
 
-	def beginBillboard(self):
-		glPushMatrix()
-		a = (GLfloat * 16)()
-		mvm = glGetFloatv(GL_MODELVIEW_MATRIX, a)
-		for i in range(0,3):
-			for j in range(0,3):
-				if (i == j):
-					mvm[i*4+j] = 1
-				else :
-					mvm[i*4+j] = 0
-		glLoadMatrixf(mvm)				
-
-	def endBillboard(self):
-		glPopMatrix()	
-
 	def drawQuad(self, Size, px, py, pz):
-		#calculate the position and orientation of the textured quad(spark)
+		"""
+		Calculate the position and orientation of the textured quad(spark)
+		"""
 		velocity = numpy.array([self.Velx, self.Vely, self.Velz ])
 		X = numpy.array([1.0,0.0,0.0])
 		Y = numpy.array([0.0,1.0,0.0])
@@ -293,12 +292,11 @@ class Particle :
 		thetaz = numpy.degrees(numpy.arccos(numpy.dot(velocity, Z)/numpy.linalg.norm(velocity)))
 		normal = numpy.cross( X,velocity)
 		norm = numpy.linalg.norm(normal)
-		#f (self.Vely < 0):
-		#	thetax = - thetax 
 
 		glPushMatrix()
 		glTranslatef(px, py, pz)
-		# rotate by thetax along the normal of the plane of the velocity vector and the x axis, to rotate the spark according to its direction of movement
+		# rotate by thetax along the normal of the plane of the velocity vector and the x axis, 
+		# to rotate the spark according to its direction of movement
 		glRotatef(thetax, normal[0]/float(norm), normal[1]/float(norm), normal[2]/float(norm))
 		glTranslatef(-px, -py, -pz)
 		
@@ -318,18 +316,16 @@ class Particle :
 
 	def draw(self):
 		i =0
-		if self.done == True :
+		if self.collided == True :
 			return False
 		elif (self.size <= 0.1):
 			return False
 		else :
-			#self.beginBillboard()	
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)	
 			glEnable(GL_BLEND)
 			glBindTexture(GL_TEXTURE_2D, self.texid)
 			self.drawQuad(self.size, self.Posx, self.Posy, self.Posz )
-			glDisable(GL_BLEND)
-			#self.endBillboard()		
+			glDisable(GL_BLEND)	
 		self.newPos()
 		self.newVel()
 		return True

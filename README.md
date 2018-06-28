@@ -13,4 +13,6 @@ Compilation Instructions :
 * Command to Run :
 	Python Renderer.py
 
-* Use the Keys (o, shift+o), (i, shift+i), (u, shift+u), (y, shift+y) to toggle the appearace of the objects
+* Use the keys (o, shift+o), (i, shift+i), (u, shift+u), (y, shift+y) to toggle the appearace of the objects
+
+* Use the keys (q, shift+q), (e, shift+e), (z, shift+z), (s, shift+s) to move the camera around in the scene
