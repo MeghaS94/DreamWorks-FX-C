@@ -7,7 +7,11 @@ from objLoader import ObjectLoader
 import globals
 
 """
-This class defines how a single particle behaves.
+This class defines how a single particle behaves. The particles follow simple equations of motion.
+When a particle collides with an obstacle in the scene, it splits and its velocity is redistributed 
+to a few child particles. We ensure energy is conserved. Each child particle gets a random direction, 
+sampled from a hemi-sphere. Since every particle is quad a 2D quad, the draw quad function
+ensures to orient the quad so that it is never looked at from the side.
 """
 
 class Particle :
